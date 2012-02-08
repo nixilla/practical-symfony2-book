@@ -1,10 +1,5 @@
-.. Practical Symfony2 for Symfony1 users documentation master file, created by
-   sphinx-quickstart on Tue Feb  7 23:06:58 2012.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-Welcome to Practical Symfony2 for Symfony1 users!
-=================================================
+Welcome to Practical Symfony 2 for Symfony 1.4 users - Jobeet tutorial!
+=======================================================================
 
 Contents:
 

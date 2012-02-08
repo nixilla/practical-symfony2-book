@@ -42,7 +42,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Practical Symfony2 for Symfony1 users'
+project = u'Practical Symfony 2 for Symfony 1.4 users - Jobeet tutorial'
 copyright = u'2012, Janusz Slota'
 
 # The version info for the project you're documenting, acts as replacement for

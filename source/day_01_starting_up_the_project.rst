@@ -4,9 +4,6 @@
 Day 1: Starting up the Project
 ==============================
 
-Symfony2 Installation
----------------------
-
 Initializing the Project Directory
 ``````````````````````````````````
 
@@ -112,9 +109,13 @@ Since I'm Nginx user, I'll show you how to set up Nginx to work with Symfony 2 a
 Nginx config (/etc/nginx/sites-available/jobeet.dev)
 ''''''''''''''''''''''''''''''''''''''''''''''''''''
 
+.. note:: This section needs to be done as root or with sudo.
+
+I'm assuming that you're using Nginx + PHP-FPM.
+
 .. code-block:: bash
 
-    cd /etc/nginx/sites-available/ && vim jobeet.dev
+    cd /etc/nginx/sites-available/ && sudo vim jobeet.dev
 
 Put this inside the jobeet.dev file, make sure that you adjust your paths
 
@@ -160,6 +161,51 @@ then:
 
 .. code-block:: bash
 
-    cd ../sites-enabled/ && ln -s ../sites-available/jobeet.dev && /etc/init.d/nginx restart
+    cd ../sites-enabled/ && sudo ln -s ../sites-available/jobeet.dev && sudo /etc/init.d/nginx restart
 
+You also need to somehow let know you computer (the one with the browser) what's the IP address for jobeet.dev
+
+Since I'm using Gentoo Linux, I usually modify my /etc/hosts file with something like this:
+
+.. code-block:: bash
+
+    # IP_address hostnamne
+    127.0.0.1 jobeet.dev
+    # or if you're using different host for development - network server or virtual machine
+    192.168.1.100 jobeet.dev
+
+Test the New Configuration
+``````````````````````````
+
+Now you can go to `your new project`_.
+
+.. _`your new project`: http://jobeet.dev/
+
+If you get *You are not allowed to access this file. Check app_dev.php for more information.*, **remove** following lines (7 to 15) in the *web/app_dev.php* file.
+
+.. code-block:: php
+
+    <?php
+
+    // this check prevents access to debug front controllers that are deployed by accident to production servers.
+    // feel free to remove this, extend it, or make something more sophisticated.
+    if (!in_array(@$_SERVER['REMOTE_ADDR'], array(
+      '127.0.0.1',
+      '::1',
+    ))) {
+      header('HTTP/1.0 403 Forbidden');
+      exit('You are not allowed to access this file. Check '.basename(__FILE__).' for more information.');
+    }
+
+Now you should see the Symfony 2 Welcome screen. Well, at least I can see it :-)
+
+.. image:: _static/welcome.jpg
+
+Well, the day 1 is over. However if you're looking for installing Symfony 2 using Subversion or Git you can continue reading.
+
+Installing Symfony 2 using Subversion
+`````````````````````````````````````
+
+Installing Symfony 2 using Git
+``````````````````````````````
 
