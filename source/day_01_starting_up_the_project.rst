@@ -202,10 +202,51 @@ Now you should see the Symfony 2 Welcome screen. Well, at least I can see it :-)
 .. image:: _static/welcome.jpg
 
 Well, the day 1 is over. However if you're looking for installing Symfony 2 using Subversion or Git you can continue reading.
+Optionally you may want to remove AcmeDemoBundle, which is a sample Symfony 2 application.
 
 Installing Symfony 2 using Subversion
 `````````````````````````````````````
 
 Installing Symfony 2 using Git
 ``````````````````````````````
+Optionally Remove AcmeDemoBundle
+````````````````````````````````
+
+To remove AcmeDemoBundle you need to do it in 4 steps:
+
+- remove directory *src/Acme* using:
+
+.. code-block:: bash
+
+    $ rm -rf src/Acme
+
+- modify *app/AppKernel.php* and remove line:
+
+.. code-block:: php
+
+    $bundles[] = new Acme\DemoBundle\AcmeDemoBundle();
+
+- remove related routes from the file *app/config/routing_dev.yml*:
+
+.. code-block:: yaml
+
+    _welcome:
+      pattern:  /
+      defaults: { _controller: AcmeDemoBundle:Welcome:index }
+
+    _demo_secured:
+      resource: "@AcmeDemoBundle/Controller/SecuredController.php"
+      type:     annotation
+
+    _demo:
+      resource: "@AcmeDemoBundle/Controller/DemoController.php"
+      type:     annotation
+      prefix:   /demo
+
+- clear cache
+
+.. code-block:: bash
+
+    $ ./app/console cache:clear
+
 
