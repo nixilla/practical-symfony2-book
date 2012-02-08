@@ -50,7 +50,7 @@ If you're looking for copy/paste command - here it is:
 
 .. code-block:: bash
 
-    $ wget http://symfony.com/download?v=Symfony_Standard_Vendors_2.0.10.tgz -O Symfony_Standard_Vendors_2.0.10.tgz && tar -xvzf Symfony_Standard_Vendors_2.0.10.tgz && mv Symfony/* . && rm -rf Symfony* && ls -l
+    wget http://symfony.com/download?v=Symfony_Standard_Vendors_2.0.10.tgz -O Symfony_Standard_Vendors_2.0.10.tgz && tar -xvzf Symfony_Standard_Vendors_2.0.10.tgz && mv Symfony/* . && rm -rf Symfony* && ls -l
 
 Installation Verification
 `````````````````````````
@@ -81,5 +81,85 @@ The downloaded package aready have you default directory structure, here is the 
 +-----------+------------------------------------------------------------------------------+
 | web       | same as in Symfony 1.4                                                       |
 +-----------+------------------------------------------------------------------------------+
+
+For more information about directory structure please visit `How Symfony2 differs from symfony1`_
+
+.. _`How Symfony2 differs from symfony1`: http://symfony.com/doc/2.0/cookbook/symfony1.html
+
+Directory Structure Permissions
+```````````````````````````````
+
+No need to write about it, when there is `documentation available`_ at symfony website.
+
+.. _`documentation available`: http://symfony.com/doc/current/book/installation.html#configuration-and-setup
+
+However, if you're looking for quick copy/paste snippet, here it is:
+
+.. code-block:: bash
+
+    rm -rf app/cache/* && rm -rf app/logs/* && chmod 777 app/cache app/logs
+
+Web Server Configuration: The ugly Way
+``````````````````````````````````````
+
+This will never happen here.
+
+Web Server Configuration: The secure Way
+````````````````````````````````````````
+
+Since I'm Nginx user, I'll show you how to set up Nginx to work with Symfony 2 application. I won't write here how to setup Apache, but I'm sure it's easy to find it on the web.
+
+Nginx config (/etc/nginx/sites-available/jobeet.dev)
+''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+.. code-block:: bash
+
+    cd /etc/nginx/sites-available/ && vim jobeet.dev
+
+Put this inside the jobeet.dev file, make sure that you adjust your paths
+
+.. code-block:: nginx
+
+    server {
+      listen 80;
+      server_name jobeet.dev;
+      root /home/janusz/projects/jobeet/web;
+      index app_dev.php;
+
+      access_log /var/log/nginx/jobeet.dev.access_log main;
+      error_log /var/log/nginx/jobeet.dev.error_log info;
+
+      location / {
+        if (-f $request_filename) {
+          expires max;
+          break;
+        }
+
+        if ($request_filename !~ "\.(js|htc|ico|gif|jpg|png|css)$") {
+          rewrite ^(.*) /app_dev.php last;
+        }
+      }
+
+      location ~ \.php($|/) {
+        set $script $uri;
+        set  $path_info  "";
+        if ($uri ~ "^(.+\.php)(/.+)") {
+          set $script $1;
+          set $path_info $2;
+        }
+
+        fastcgi_pass 127.0.0.1:9000;
+        include fastcgi_params;
+        fastcgi_param PATH_INFO $path_info;
+        fastcgi_param SCRIPT_FILENAME $document_root/$script;
+        fastcgi_param SCRIPT_NAME $script;
+      }
+    }
+
+then:
+
+.. code-block:: bash
+
+    cd ../sites-enabled/ && ln -s ../sites-available/jobeet.dev && /etc/init.d/nginx restart
 
 
