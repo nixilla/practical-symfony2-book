@@ -11,8 +11,8 @@ Before installing symfony, you first need to create a directory that will host a
 
 .. code-block:: bash
 
-    $ mkdir ~/projects/jobeet
-    $ cd ~/projects/jobeet/
+    mkdir ~/projects/jobeet && \
+    cd ~/projects/jobeet/
 
 Downloading and Installing Symfony2 from Symfony.com website
 ````````````````````````````````````````````````````````````
@@ -47,7 +47,12 @@ If you're looking for copy/paste command - here it is:
 
 .. code-block:: bash
 
-    wget http://symfony.com/download?v=Symfony_Standard_Vendors_2.0.10.tgz -O Symfony_Standard_Vendors_2.0.10.tgz && tar -xvzf Symfony_Standard_Vendors_2.0.10.tgz && mv Symfony/* . && rm -rf Symfony* && ls -l
+    wget http://symfony.com/download?v=Symfony_Standard_Vendors_2.0.10.tgz -O Symfony_Standard_Vendors_2.0.10.tgz && \
+    tar -xvzf Symfony_Standard_Vendors_2.0.10.tgz && \
+    mv Symfony/* . && \
+    rm -rf Symfony* && \
+    ls -l \
+    ./app/console -V
 
 Installation Verification
 `````````````````````````
@@ -86,7 +91,7 @@ For more information about directory structure please visit `How Symfony2 differ
 Directory Structure Permissions
 ```````````````````````````````
 
-No need to write about it, when there is `documentation available`_ at symfony website.
+There is no need to write about it, when there is `documentation available`_ at symfony website.
 
 .. _`documentation available`: http://symfony.com/doc/current/book/installation.html#configuration-and-setup
 
@@ -94,7 +99,9 @@ However, if you're looking for quick copy/paste snippet, here it is:
 
 .. code-block:: bash
 
-    rm -rf app/cache/* && rm -rf app/logs/* && chmod 777 app/cache app/logs
+    rm -rf app/cache/* && \
+    rm -rf app/logs/* && \
+    chmod 777 app/cache app/logs
 
 Web Server Configuration: The ugly Way
 ``````````````````````````````````````
@@ -115,7 +122,8 @@ I'm assuming that you're using Nginx + PHP-FPM.
 
 .. code-block:: bash
 
-    cd /etc/nginx/sites-available/ && sudo vim jobeet.dev
+    cd /etc/nginx/sites-available/ && \
+    sudo vim jobeet.dev
 
 Put this inside the jobeet.dev file, make sure that you adjust your paths
 
@@ -161,7 +169,9 @@ then:
 
 .. code-block:: bash
 
-    cd ../sites-enabled/ && sudo ln -s ../sites-available/jobeet.dev && sudo /etc/init.d/nginx restart
+    cd ../sites-enabled/ && \
+    sudo ln -s ../sites-available/jobeet.dev && \
+    sudo /etc/init.d/nginx restart
 
 You also need to somehow let know you computer (the one with the browser) what's the IP address for jobeet.dev
 
@@ -201,14 +211,136 @@ Now you should see the Symfony 2 Welcome screen. Well, at least I can see it :-)
 
 .. image:: _static/welcome.jpg
 
-Well, the day 1 is over. However if you're looking for installing Symfony 2 using Subversion or Git you can continue reading.
-Optionally you may want to remove AcmeDemoBundle, which is a sample Symfony 2 application.
+Well, the day 1 is over. However if you're looking for installing Symfony 2
+using Subversion or Git you can continue reading. Optionally you may want
+to remove AcmeDemoBundle, which is a sample Symfony 2 application.
 
-Installing Symfony 2 using Subversion
-`````````````````````````````````````
+Managing Symfony 2 project with Version Control Systems
+```````````````````````````````````````````````````````
 
-Installing Symfony 2 using Git
-``````````````````````````````
+Subversion
+''''''''''
+
+Unlike Symfony 1.4 project where you initialize empty directory as your
+Subversion repository, and then you gradually add stuff, i.e. vendors,
+plugins, project, frontend and backend app, in Symfony 2.0, once you donwload
+Symfony Standard without vendors, you alredy have your project and app
+(frontend or backend as you only can have one).
+
+In Symfony 1.4 you usually define lib/vendor/symfony as svn:external bound to
+latest tag i.e. http://svn.symfony-project.com/tags/RELEASE_1_4_15.
+When new release is available you are editing your svn:externals and update tag
+to http://svn.symfony-project.com/tags/RELEASE_1_4_16 and then run svn update.
+
+It's very similar with plugins. If the plugins you're using have tags you bind
+your svn:externals to these tags, if not - you usually bind to trunk or
+branches. Personally I don't like this approach as I never know whether the
+version of the plugin is stable or not.
+
+In Symfony 2.0 you don't define vendors as svn:externals but as svn:ignore.
+
+.. note:: Even if your using Subversion you still need Git installed on you dev machine as the bin/vendors script requires it
+
+Symfony 2.0 handles dependencies using bin/vendors script. This script
+grabs all repositories required for you project which are defined in deps and
+deps.lock files.
+
+So, for example, if you have project running Symfony 2.0.9, and there is 2.0.10
+available all you need to do is download latest deps and deps.lock files and run
+bin/vendors script. Of course it's highly recommended that you'll read the
+blog post related to the update as there may be some additional things to do.
+
+Quick update copy/paste snippet:
+
+.. note:: If you modified your deps and deps.lock files the command below will override them, so presumably you need to manually merge the changes instead.
+
+.. code-block:: bash
+
+    wget https://raw.github.com/symfony/symfony-standard/v2.0.10/deps -O deps && \
+    wget https://raw.github.com/symfony/symfony-standard/v2.0.10/deps.lock -O deps.lock && \
+    ./bin/vendors install
+
+Seting up the brend new project in Subversion
+'''''''''''''''''''''''''''''''''''''''''''''
+
+The following few lines come from orginal Practical Symfony for Symfony 1.4
+
+First, create a repository for the jobeet project on the repository server:
+
+.. code-block:: bash
+
+    svnadmin create /path/to/jobeet/repository
+
+On your machine, create the basic directory structure:
+
+.. code-block:: bash
+
+    svn mkdir -m "created default directory structure" http://svn.example.com/jobeet/trunk http://svn.example.com/jobeet/tags http://svn.example.com/jobeet/branches
+
+And checkout the empty trunk/ to new directory:
+
+.. code-block:: bash
+
+    mkdir ~/projects/jobeet && \
+    cd ~/projects/jobeet/ && \
+    svn co http://svn.example.com/jobeet/trunk/ .
+
+Donwload and install latest Symofny 2 without vendors:
+
+.. code-block:: bash
+
+    wget http://symfony.com/download?v=Symfony_Standard_2.0.10.tgz -O Symfony_Standard_2.0.10.tgz && \
+    tar -xvzf Symfony_Standard_2.0.10.tgz && \
+    mv Symfony/* . && \
+    rm -rf Symfony* && \
+    ./bin/vendors install && \
+    ./app/console -V
+
+Now add project to repository (based on information found on `this page`_):
+
+.. _`this page`: http://symfony.com/doc/2.0/cookbook/workflow/new_project_svn.html
+
+.. code-block:: bash
+
+    svn add --depth=empty app app/cache app/logs app/config web && \
+    svn propset svn:ignore "vendor" . && \
+    svn propset svn:ignore "bootstrap*" app/ && \
+    svn propset svn:ignore "parameters.ini" app/config/ && \
+    svn propset svn:ignore "*" app/cache/ && \
+    svn propset svn:ignore "*" app/logs/ && \
+    svn propset svn:ignore "bundles" web && \
+    svn ci -m "commit basic symfony ignore list (vendor, app/bootstrap*, app/config/parameters.ini, app/cache/*, app/logs/*, web/bundles)" && \
+    svn add --force . && \
+    svn ci -m "add basic Symfony Standard 2.0.10"
+
+And now you have working SVN repository with Symfony 2.0.10 project. Enjoy!
+
+Git
+'''
+
+There is a documentation on how to create Symfony 2 Git repository available on
+`Symfony website`_, but if you're looking for copy/paste snippet, here it is:
+
+.. _`Symfony website`: http://symfony.com/doc/2.0/cookbook/workflow/new_project_git.html
+
+.. code-block:: bash
+
+    mkdir ~/projects/jobeet && \
+    cd ~/projects/jobeet/ && \
+    echo -e "/web/bundles/\n/app/bootstrap*\n/app/cache/*\n/app/logs/*\n/vendor/\n/app/config/parameters.ini\n" > .gitignore && \
+    wget http://symfony.com/download?v=Symfony_Standard_2.0.10.tgz -O Symfony_Standard_2.0.10.tgz && \
+    tar -xvzf Symfony_Standard_2.0.10.tgz && \
+    mv Symfony/* . && \
+    rm -rf Symfony* && \
+    cp app/config/parameters.ini app/config/parameters.ini.dist && \
+    git init && \
+    git add . && \
+    git commit -m "Initial commit" && \
+    ./bin/vendors install && \
+    ./app/console -V
+
+Now you have working Git repository with Symfony 2.0 project. Enjoy!
+
 Optionally Remove AcmeDemoBundle
 ````````````````````````````````
 
@@ -218,7 +350,7 @@ To remove AcmeDemoBundle you need to do it in 4 steps:
 
 .. code-block:: bash
 
-    $ rm -rf src/Acme
+    rm -rf src/Acme
 
 - modify *app/AppKernel.php* and remove line:
 
@@ -247,6 +379,6 @@ To remove AcmeDemoBundle you need to do it in 4 steps:
 
 .. code-block:: bash
 
-    $ ./app/console cache:clear
+    ./app/console cache:clear
 
 
