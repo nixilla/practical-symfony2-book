@@ -46,7 +46,7 @@ Now we're going to define our models
 
 .. note:: Doctrine 2 does not support natively behaviour like it does in Doctrine 1.2.
           Therefore you need to install third party extension as described `here`_.
-          For we'll skip the behaviours for now, so we can quickly get started.
+          We'll skip the behaviours for now, so we can quickly get started.
 
 .. _`here`: http://symfony.com/doc/current/cookbook/doctrine/common_extensions.html
 
@@ -55,7 +55,7 @@ Create schema
 
 Unlike Symfony 1.4 where you creare config/doctrine/schema.yml and define you models,
 in Symfony 2.0 you first create model classes POPOs (Plain Old PHP Objects) which
-does not inherit from anything.
+do not inherit from anything.
 
 Later Doctrine 2 creates classes which inherit from yours' and implements the magic.
 So it's the other way around then in Doctrine 1.2
@@ -192,8 +192,8 @@ As you can see the difference between the *annotations* and *yml* configuration
 format relates to the meta information being saved into yaml file.
 
 .. note:: It's better for you if you use one type of configuration formats,
-          it'll keep your project consistent. Here I'm just exploring the
-          differences between the formats.
+          otherwise you won't be able to build the database. Here I'm just exploring the
+          differences between the formats. I'll continue with Yaml format from now on.
 
 As you can see, I haven't defined the relation yet. According to the
 `documentation page`_, all I need to do is to add manyToOne to yml file.
@@ -218,26 +218,14 @@ As you can see, I haven't defined the relation yet. According to the
 
 I also need to add *OneToMany* annotation on JobeetCategory:
 
-.. code-block:: php
+.. code-block:: yaml
 
-    <?php
-
-    class JobeetCategory
-    {
-      // fields definitions here
-
-      /**
-       * @ORM\OneToMany(targetEntity="JobeetJob", mappedBy="category")
-       */
-      protected $jobs;
-
-      public function __construct()
-      {
-        $this->jobs = new ArrayCollection();
-      }
-
-      // automatic getters and setters here
-    }
+    Nixilla\JobeetBundle\Entity\JobeetCategory:
+      # ...
+      oneToMany:
+        JobeetJobs:
+          targetEntity: JobeetJob
+          mappedBy: jobs
 
 Now run this command to updated getters and setters for JobeetJob, since you added new property *category*
 
@@ -259,14 +247,134 @@ To check what has changed since last commit follow `this link`_.
 
 .. _`this link`: https://github.com/nixilla/Symfony2-Jobeet/commit/452bd21d20187b774a9f07511a28b6ed97867e8d
 
-Now we need to add two more models *JobeetAffiliate* and *JobeetCategoryAffiliate*.
-But because we're already discussed the creation of models. Therefore I've
-already created these models using Yaml configuration format and you can
-check out the output of these command in commits `e08f543b45`_
-and `eac0825f6b`_.
+Now we need to add two more model *JobeetAffiliate* and create link to JobeetCategory
+using *JobeetCategoryAffiliate* link table.
 
-.. _`e08f543b45`: https://github.com/nixilla/Symfony2-Jobeet/commit/e08f543b4552bc7546926f87015cbaeed008517c
-.. _`eac0825f6b`: https://github.com/nixilla/Symfony2-Jobeet/commit/eac0825f6b8d9e9c3227457971547ad276ac1c8a
+.. note:: As you can see from the data model in chapter 2, the JobeetCategoryAffiliate
+          is the link table, between JobeetAffiliate and JobeetCategory in many-to-many
+          relation. In Doctrine 2 you don't define this table in your classes/yaml.
+          Doctrine 2 will created this table for you. Have a look on `Doctrine documentation page`_.
+
+.. _`Doctrine documentation page`: http://docs.doctrine-project.org/projects/doctrine-orm/en/2.0.x/reference/association-mapping.html#many-to-many-unidirectional
+
+So, to define many-to-many relation between 2 models, using YAML you need to
+add manyToMany section into relevant class. If you add this section to both
+classes, you'll get bi-directional relation. But here I'am going to use
+unidirectional - same as the in the original Jobeet project.
+
+.. code-block:: yaml
+
+    Nixilla\JobeetBundle\Entity\JobeetAffiliate:
+      # ...
+      manyToMany:
+        JobeetCategories:
+          targetEntity: JobeetCategory
+          joinTable:
+            name: JobeetCategoryAffiliate
+            joinColumns:
+              category_id:
+                referencedColumnName: id
+            inverseJoinColumns:
+              affiliate_id:
+                referencedColumnName: id
+
+Now rerun:
+
+.. code-block:: bash
+
+    ./app/console doctrine:generate:entities --no-backup Nixilla
+
+Doctrine Constrains
+'''''''''''''''''''
+
+As you probably noticed, I haven't defined any notnull values as in Doctrine 1.2 schema.yml. Let's do it now.
+
+.. configuration-block::
+
+    .. code-block:: yaml
+
+        # before
+        Nixilla\JobeetBundle\Entity\JobeetJob:
+          type: entity
+          table: null
+          fields:
+            id:           { type: integer, id: true, generator: { strategy: AUTO } }
+            type:         { type: string, length: 255 }
+            company:      { type: string, length: 255 }
+            logo:         { type: string, length: 255 }
+            url:          { type: string, length: 255 }
+            position:     { type: string, length: 255 }
+            location:     { type: string, length: 255 }
+            description:  { type: string, length: '4000' }
+            how_to_apply: { type: string, length: '4000' }
+            token:        { type: string, length: 255 }
+            is_public:    { type: boolean }
+            is_activated: { type: boolean }
+            email:        { type: string, length: 255 }
+            expires_at:   { type: datetime }
+          lifecycleCallbacks: {  }
+          manyToOne:
+            JobeetCategory:
+              targetEntity: JobeetCategory
+              inversedBy: jobs
+              joinColumn:
+                name: category_id
+                referencedColumnName: id
+
+    .. code-block:: yaml
+
+        # after
+        Nixilla\JobeetBundle\Entity\JobeetJob:
+          type: entity
+          table: null
+          fields:
+            id:           { type: integer, id: true, generator: { strategy: AUTO } }
+            type:         { type: string, length: 255, nullable: true }
+            company:      { type: string, length: 255 }
+            logo:         { type: string, length: 255, nullable: true }
+            url:          { type: string, length: 255, nullable: true }
+            position:     { type: string, length: 255 }
+            location:     { type: string, length: 255 }
+            description:  { type: string, length: '4000' }
+            how_to_apply: { type: string, length: '4000' }
+            token:        { type: string, length: 255, unique: true }
+            is_public:    { type: boolean }
+            is_activated: { type: boolean }
+            email:        { type: string, length: 255 }
+            expires_at:   { type: datetime }
+          lifecycleCallbacks: {  }
+          manyToOne:
+            JobeetCategory:
+              targetEntity: JobeetCategory
+              inversedBy: jobs
+              joinColumn:
+                name: category_id
+                referencedColumnName: id
+
+    .. code-block:: yaml
+
+        # Doctrine 1.2 just for reference
+        JobeetJob:
+          actAs:
+            Timestampable: ~
+          columns:
+            category_id:  { type: integer, notnull: true }
+            type:         { type: string(255) }
+            company:      { type: string(255), notnull: true }
+            logo:         { type: string(255) }
+            url:          { type: string(255) }
+            position:     { type: string(255), notnull: true }
+            location:     { type: string(255), notnull: true }
+            description:  { type: string(4000), notnull: true }
+            how_to_apply: { type: string(4000), notnull: true }
+            token:        { type: string(255), notnull: true, unique: true }
+            is_public:    { type: boolean, notnull: true, default: 1 }
+            is_activated: { type: boolean, notnull: true, default: 0 }
+            email:        { type: string(255), notnull: true }
+            expires_at:   { type: timestamp, notnull: true }
+          relations:
+            JobeetCategory: { onDelete: CASCADE, local: category_id, foreign: id, foreignAlias: JobeetJobs }
+
 
 Testing the models
 ``````````````````
